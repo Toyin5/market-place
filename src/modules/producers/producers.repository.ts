@@ -42,12 +42,15 @@ export const producersRepository = {
     return prisma.producerProfile.count({ where });
   },
 
-  findMany(where: Prisma.ProducerProfileWhereInput, options?: Prisma.ProducerProfileFindManyArgs) {
+  findMany(
+    where: Prisma.ProducerProfileWhereInput,
+    options: Omit<Prisma.ProducerProfileFindManyArgs, 'where' | 'include' | 'select'> = {},
+  ) {
     return prisma.producerProfile.findMany({
       where,
       include: producerProfileWithUserInclude,
       ...options,
-    });
+    }) as Promise<ProducerProfileWithUser[]>;
   },
 
   searchPaginated(

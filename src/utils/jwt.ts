@@ -1,5 +1,6 @@
 import type { UserRole } from '@prisma/client';
 import { sign, verify } from 'hono/jwt';
+import { z } from 'zod';
 
 import { env } from '../config/env';
 import type { AuthTokenPayload } from '../types/auth';
@@ -13,13 +14,26 @@ interface JwtPayload {
   exp: number;
 }
 
+const jwtPayloadSchema = z.object({
+  sub: z.string(),
+  email: z.string().email(),
+  role: z.custom<UserRole>(),
+  iat: z.number(),
+  exp: z.number(),
+});
+
 const parseJwtExpirationToSeconds = (value: string) => {
   const normalizedValue = value.trim().toLowerCase();
   const durationMatch = normalizedValue.match(/^(\d+)([smhd])$/);
 
   if (durationMatch) {
-    const amount = Number(durationMatch[1]);
-    const unit = durationMatch[2];
+    const [, rawAmount, rawUnit] = durationMatch;
+
+    if (!rawAmount || !rawUnit) {
+      throw new AppError(500, 'JWT_EXPIRES_IN must be a positive number or duration like 7d');
+    }
+
+    const amount = Number(rawAmount);
 
     const unitToSecondsMap: Record<string, number> = {
       s: 1,
@@ -28,7 +42,13 @@ const parseJwtExpirationToSeconds = (value: string) => {
       d: 60 * 60 * 24,
     };
 
-    return amount * unitToSecondsMap[unit];
+    const seconds = unitToSecondsMap[rawUnit];
+
+    if (!seconds) {
+      throw new AppError(500, 'JWT_EXPIRES_IN must be a positive number or duration like 7d');
+    }
+
+    return amount * seconds;
   }
 
   const rawSeconds = Number(normalizedValue);
@@ -53,11 +73,12 @@ export const createAccessToken = async (payload: AuthTokenPayload) => {
       exp,
     },
     env.JWT_SECRET,
+    'HS256',
   );
 };
 
 export const verifyAccessToken = async (token: string) => {
-  const payload = await verify(token, env.JWT_SECRET);
+  const payload = await verify(token, env.JWT_SECRET, 'HS256');
 
-  return payload as JwtPayload;
+  return jwtPayloadSchema.parse(payload) as JwtPayload;
 };

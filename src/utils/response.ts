@@ -1,4 +1,5 @@
 import type { Context } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 export const successResponse = <T>(
   context: Context,
@@ -12,7 +13,7 @@ export const successResponse = <T>(
       message,
       data,
     },
-    statusCode,
+    statusCode as ContentfulStatusCode,
   );
 };
 
@@ -28,6 +29,6 @@ export const errorResponse = (
       message,
       errors,
     },
-    statusCode,
+    statusCode as ContentfulStatusCode,
   );
 };

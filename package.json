@@ -1,5 +1,5 @@
 {
-  "name": "polowo-backend",
+  "name": "market-place-backend",
   "version": "1.0.0",
   "private": true,
   "description": "Backend API for a Nigerian fashion and textile marketplace built with Hono, Prisma, PostgreSQL, and TypeScript.",

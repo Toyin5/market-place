@@ -1,4 +1,4 @@
-# Polowo Backend
+# market-place Backend
 
 Production-ready backend scaffold for a Nigerian fashion and textile marketplace that connects fashion designers with local textile producers and fabric suppliers.
 
@@ -94,6 +94,7 @@ npm run dev
 ```
 
 The API will be available at `http://localhost:3000`.
+Swagger UI will be available at `http://localhost:3000/docs` and the raw OpenAPI spec at `http://localhost:3000/openapi.json`.
 
 ## Authentication
 

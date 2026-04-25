@@ -2,11 +2,21 @@ import { z } from 'zod';
 
 import { nigerianStateSchema } from '../../utils/schemas';
 import {
+  emptyStringToUndefined,
   optionalBooleanQuery,
-  optionalIntegerQuery,
   optionalNumberQuery,
   optionalTrimmedStringQuery,
 } from '../../utils/validation';
+
+const pageQuerySchema = z.preprocess(
+  emptyStringToUndefined,
+  z.coerce.number().int().positive().default(1),
+);
+
+const limitQuerySchema = z.preprocess(
+  emptyStringToUndefined,
+  z.coerce.number().int().positive().max(100).default(20),
+);
 
 export const marketplaceSearchSchema = z
   .object({
@@ -20,10 +30,8 @@ export const marketplaceSearchSchema = z
     minPrice: optionalNumberQuery('minPrice'),
     maxPrice: optionalNumberQuery('maxPrice'),
     search: optionalTrimmedStringQuery('search'),
-    page: optionalIntegerQuery('page', 1),
-    limit: optionalIntegerQuery('limit', 20).refine((value) => value <= 100, {
-      message: 'limit must not exceed 100',
-    }),
+    page: pageQuerySchema,
+    limit: limitQuerySchema,
     sortBy: z
       .enum(['newest', 'rating', 'businessName'], {
         invalid_type_error: 'sortBy must be one of newest, rating, or businessName',

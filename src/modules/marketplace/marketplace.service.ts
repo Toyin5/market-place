@@ -146,8 +146,10 @@ const buildPagination = (page: number, limit: number, total: number) => ({
 
 export const marketplaceService = {
   async searchProducers(filters: MarketplaceSearchInput) {
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
     const where = buildBaseWhere(filters);
-    const skip = (filters.page - 1) * filters.limit;
+    const skip = (page - 1) * limit;
     const requiresInMemoryFiltering = Boolean(filters.search || filters.fabricType);
 
     if (!requiresInMemoryFiltering) {
@@ -155,12 +157,12 @@ export const marketplaceService = {
         where,
         buildOrderBy(filters.sortBy),
         skip,
-        filters.limit,
+        limit,
       );
 
       return {
         items: profiles.map(toProducerProfileResponse),
-        pagination: buildPagination(filters.page, filters.limit, total),
+        pagination: buildPagination(page, limit, total),
       };
     }
 
@@ -173,11 +175,11 @@ export const marketplaceService = {
       ),
       filters.sortBy,
     );
-    const paginatedProfiles = filteredProfiles.slice(skip, skip + filters.limit);
+    const paginatedProfiles = filteredProfiles.slice(skip, skip + limit);
 
     return {
       items: paginatedProfiles.map(toProducerProfileResponse),
-      pagination: buildPagination(filters.page, filters.limit, filteredProfiles.length),
+      pagination: buildPagination(page, limit, filteredProfiles.length),
     };
   },
 };

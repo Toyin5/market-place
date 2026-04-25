@@ -27,7 +27,13 @@ export const registerSchema = z.discriminatedUnion('role', [
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: requiredText('password', 8, 72),
+  password: z
+    .string({
+      required_error: 'Password is required',
+      invalid_type_error: 'Password must be a string',
+    })
+    .min(1, 'Password is required')
+    .max(72, 'Password must be at most 72 characters'),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
