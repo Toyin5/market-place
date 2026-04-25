@@ -60,6 +60,7 @@ Required variables:
 - `JWT_SECRET`: long secret used to sign access tokens
 - `JWT_EXPIRES_IN`: token lifetime such as `7d`, `24h`, or `3600`
 - `BCRYPT_SALT_ROUNDS`: bcrypt hashing cost, for example `12`
+- `CORS_ORIGIN`: `*` or a comma-separated list of allowed frontend origins
 
 ## Setup
 
@@ -237,5 +238,29 @@ The seed script creates sample producers plus one sample designer. All seeded ac
 - `npm run typecheck`
 - `npm run prisma:generate`
 - `npm run prisma:migrate`
+- `npm run prisma:migrate:deploy`
 - `npm run prisma:studio`
 - `npm run db:seed`
+
+## Deploy To Render
+
+This repo now includes a root `render.yaml` so you can deploy the API to Render without hard-coding a managed database choice into the repo. You can point `DATABASE_URL` to either Render Postgres or an external PostgreSQL provider.
+
+Recommended steps:
+
+1. Push the repo to GitHub.
+2. In Render, create a new Blueprint or Web Service from the repo.
+3. Set `DATABASE_URL` and `JWT_SECRET` before the first deploy.
+4. Optionally set `CORS_ORIGIN` to your frontend URL instead of `*`.
+
+The included Render configuration uses:
+
+- Build command: `npm install && npm run build && npm run prisma:migrate:deploy`
+- Start command: `npm start`
+- Health check path: `/health`
+
+Notes:
+
+- `npm run build` now generates the Prisma client before compiling TypeScript.
+- `prisma migrate deploy` applies the committed SQL migrations during deployment.
+- The seed script is not run automatically in production. If you want sample data on Render, run `npm run db:seed` manually as a one-off job or in a Render shell.

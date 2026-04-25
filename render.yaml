@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: market-place-backend
+    runtime: node
+    plan: free
+    autoDeployTrigger: commit
+    buildCommand: npm install && npm run build && npm run prisma:migrate:deploy
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: BCRYPT_SALT_ROUNDS
+        value: 12
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false

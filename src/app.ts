@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
+import { corsOrigins } from "./config/cors";
 import { createSwaggerUiHtml, openApiDocument } from "./docs/openapi";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import { authRoutes } from "./modules/auth/auth.routes";
@@ -15,7 +16,7 @@ export const app = new Hono<AppBindings>();
 app.use(
   "*",
   cors({
-    origin: "*",
+    origin: corsOrigins,
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   }),
