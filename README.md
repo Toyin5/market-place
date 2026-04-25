@@ -244,23 +244,27 @@ The seed script creates sample producers plus one sample designer. All seeded ac
 
 ## Deploy To Render
 
-This repo now includes a root `render.yaml` so you can deploy the API to Render without hard-coding a managed database choice into the repo. You can point `DATABASE_URL` to either Render Postgres or an external PostgreSQL provider.
+This repo now includes a root `render.yaml` and `Dockerfile` so you can deploy the API to Render as a Docker-based web service. You can point `DATABASE_URL` to either Render Postgres or an external PostgreSQL provider.
 
 Recommended steps:
 
 1. Push the repo to GitHub.
-2. In Render, create a new Blueprint or Web Service from the repo.
+2. In Render, create a new Blueprint or Web Service from the repo and choose the Docker runtime.
 3. Set `DATABASE_URL` and `JWT_SECRET` before the first deploy.
 4. Optionally set `CORS_ORIGIN` to your frontend URL instead of `*`.
+5. Leave `SEED_ON_STARTUP=true` if you want the container to seed sample data when the database is still empty.
 
-The included Render configuration uses:
+The included Docker-based setup uses:
 
-- Build command: `npm install && npm run build && npm run prisma:migrate:deploy`
-- Start command: `npm start`
+- `Dockerfile` to install dependencies and build the TypeScript app
+- `docker-entrypoint.sh` to run `prisma migrate deploy` before starting the server
+- `prisma/startup-seed.ts` to seed sample data only when the application database has no users yet
 - Health check path: `/health`
 
 Notes:
 
-- `npm run build` now generates the Prisma client before compiling TypeScript.
-- `prisma migrate deploy` applies the committed SQL migrations during deployment.
-- The seed script is not run automatically in production. If you want sample data on Render, run `npm run db:seed` manually as a one-off job or in a Render shell.
+- `npm run build` generates the Prisma client before compiling TypeScript.
+- On Render Free web services, `preDeployCommand` is not available, so the container entrypoint runs `prisma migrate deploy` on startup before launching the app.
+- With `SEED_ON_STARTUP=true`, startup also checks whether the database is empty and runs the existing seed script only on the first boot against a fresh database.
+- The container listens on Render's `PORT` environment variable, which defaults to `10000` for web services.
+- If you do not want sample data in a given environment, set `SEED_ON_STARTUP=false`.

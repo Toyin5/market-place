@@ -3,8 +3,6 @@ import "dotenv/config";
 import { PrismaClient, UserRole } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
-
 const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? 12);
 
 const sampleProducers = [
@@ -144,7 +142,7 @@ const sampleDesigners = [
   },
 ];
 
-async function main() {
+export async function seedDatabase(prisma: PrismaClient) {
   const sharedPasswordHash = await bcrypt.hash("Password123", saltRounds);
 
   for (const producer of sampleProducers) {
@@ -227,11 +225,20 @@ async function main() {
   console.log("Seed completed successfully.");
 }
 
-main()
-  .catch((error) => {
-    console.error("Seed failed:", error);
-    process.exit(1);
-  })
-  .finally(async () => {
+const runSeed = async () => {
+  const prisma = new PrismaClient();
+
+  try {
+    await seedDatabase(prisma);
+  } finally {
     await prisma.$disconnect();
-  });
+  }
+};
+
+if (require.main === module) {
+  runSeed()
+    .catch((error) => {
+      console.error("Seed failed:", error);
+      process.exit(1);
+    });
+}

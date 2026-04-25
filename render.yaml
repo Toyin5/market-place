@@ -1,12 +1,12 @@
 services:
   - type: web
     name: market-place-backend
-    runtime: node
+    runtime: docker
     plan: free
     autoDeployTrigger: commit
-    buildCommand: npm install && npm run build && npm run prisma:migrate:deploy
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /health
+    maxShutdownDelaySeconds: 120
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,3 +18,7 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: SEED_ON_STARTUP
+        value: "true"
